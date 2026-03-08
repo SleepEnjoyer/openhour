@@ -141,7 +141,7 @@
 
     <!-- Results -->
     <div class="card" th:if="${events != null}">
-        <h2>Events That Don't Conflict With Your Classes</h2>
+        <h2>Events That Don't Conflict With Your Schedule</h2>
         <p class="result-count" th:text="${events.size()} + ' event(s) found'">0 events found</p>
 
         <div th:if="${events.isEmpty()}" class="empty-state">
