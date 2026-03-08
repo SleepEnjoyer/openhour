@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenHour</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #FFFFFF;
+            color: #1E1E1E;
+            min-height: 100vh;
+        }
+        nav {
+            background: #1B3A5C;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        nav .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-decoration: none;
+        }
+        nav a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: #FFFFFF; }
+        .hero {
+            text-align: center;
+            padding: 80px 20px 40px;
+        }
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #1B3A5C;
+            margin-bottom: 16px;
+        }
+        .hero .tagline {
+            font-size: 1.3rem;
+            color: #6B7280;
+        }
+        .content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 20px 80px;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section h2 {
+            font-size: 1.3rem;
+            color: #1B3A5C;
+            margin-bottom: 8px;
+        }
+        .section p {
+            color: #4B5563;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        @media (max-width: 700px) {
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/" class="logo">OpenHour</a>
+    <a href="/schedule">My Schedule</a>
+    <a href="/events">Events</a>
+    <a href="/discover">Discover</a>
+</nav>
+
+<div class="hero">
+    <h1>OpenHour</h1>
+    <p class="tagline">Discover the events that fit your schedule</p>
+</div>
+
+<div class="content">
+    <div class="section">
+        <h2>My Schedule</h2>
+        <p>Enter your name and build out your weekly schedule. You can add activities across multiple days with start and end times, and see everything laid out on a visual weekly grid. You can remove individual activities to keep your schedule up to date.</p>
+    </div>
+    <div class="section">
+        <h2>Events</h2>
+        <p>Browse community events happening on campus or create your own. Each event includes the date, time, location, and a description so you know what to expect. Anyone can RSVP to show they're going, and you can see how many people plan to attend.</p>
+    </div>
+    <div class="section">
+        <h2>Discover</h2>
+        <p>Enter your name and see the events that don't conflict with your current schedule, so you never have to worry about double-booking. You can filter by category to find exactly what you're looking for.</p>
+    </div>
+</div>
+</body>
+</html>

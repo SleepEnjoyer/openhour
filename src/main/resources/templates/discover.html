@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover - OpenHour</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #FFFFFF;
+            color: #1E1E1E;
+            min-height: 100vh;
+        }
+        nav {
+            background: #1B3A5C;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        nav .logo { font-size: 1.4rem; font-weight: 700; color: #FFFFFF; text-decoration: none; }
+        nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        nav a:hover { color: #FFFFFF; }
+        nav a.active { color: #FFFFFF; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+        h1 { font-size: 2rem; margin-bottom: 24px; color: #1B3A5C; }
+        .card {
+            background: #F4F5F7;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #D9DCE0;
+        }
+        .card h2 { font-size: 1.2rem; margin-bottom: 16px; color: #1B3A5C; }
+        .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; flex: 1; min-width: 160px; }
+        .form-group label { font-size: 0.85rem; color: #6B7280; margin-bottom: 4px; }
+        input, select {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #D9DCE0;
+            background: #FFFFFF;
+            color: #1E1E1E;
+            font-size: 0.95rem;
+        }
+        input:focus, select:focus { outline: none; border-color: #1B3A5C; }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-discover { background: #1B3A5C; color: white; }
+        .btn-discover:hover { background: #A3293D; }
+
+        /* Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        .event-card {
+            background: #FFFFFF;
+            border: 1px solid #D9DCE0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: border-color 0.2s;
+        }
+        .event-card:hover { border-color: #1B3A5C; }
+        .event-card h3 { font-size: 1.1rem; color: #1E1E1E; margin-bottom: 8px; }
+        .event-meta { font-size: 0.85rem; color: #6B7280; margin-bottom: 4px; }
+        .event-meta span { margin-right: 12px; }
+        .event-desc { font-size: 0.9rem; color: #4B5563; margin: 12px 0; line-height: 1.4; }
+        .category-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .cat-social { background: #EDE9FE; color: #6D28D9; }
+        .cat-academic { background: #DBEAFE; color: #1D4ED8; }
+        .cat-sports { background: #D1FAE5; color: #059669; }
+        .cat-other { background: #FEF3C7; color: #D97706; }
+        .rsvp-count {
+            font-size: 0.9rem; color: #1B3A5C; font-weight: 600;
+            margin-top: 12px; padding-top: 12px; border-top: 1px solid #D9DCE0;
+        }
+        .no-conflict {
+            display: inline-block;
+            background: #D1FAE5;
+            color: #059669;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .empty-state { text-align: center; color: #6B7280; padding: 24px; font-style: italic; }
+        .result-count { color: #6B7280; font-size: 0.95rem; margin-bottom: 16px; }
+        @media (max-width: 700px) {
+            .form-row { flex-direction: column; }
+            .results-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/" class="logo">OpenHour</a>
+    <a href="/schedule">My Schedule</a>
+    <a href="/events">Events</a>
+    <a href="/discover" class="active">Discover</a>
+</nav>
+
+<div class="container">
+    <h1>Discover Events</h1>
+
+    <!-- Search Form -->
+    <div class="card">
+        <h2>Find Events That Fit Your Schedule</h2>
+        <form th:action="@{/discover}" method="get" class="form-row">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" name="studentName" th:value="${studentName}" required />
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category">
+                    <option value="all" th:selected="${selectedCategory == 'all'}">All Categories</option>
+                    <option value="social" th:selected="${selectedCategory == 'social'}">Social</option>
+                    <option value="academic" th:selected="${selectedCategory == 'academic'}">Academic</option>
+                    <option value="sports" th:selected="${selectedCategory == 'sports'}">Sports</option>
+                    <option value="other" th:selected="${selectedCategory == 'other'}">Other</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-discover">Discover</button>
+        </form>
+    </div>
+
+    <!-- Results -->
+    <div class="card" th:if="${events != null}">
+        <h2>Events That Don't Conflict With Your Classes</h2>
+        <p class="result-count" th:text="${events.size()} + ' event(s) found'">0 events found</p>
+
+        <div th:if="${events.isEmpty()}" class="empty-state">
+            No matching events found. Try a different category, or make sure you have classes added to your schedule.
+        </div>
+
+        <div class="results-grid" th:if="${!events.isEmpty()}">
+            <div class="event-card" th:each="event : ${events}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3 th:text="${event.eventName}">Study Group</h3>
+                    <span class="category-badge"
+                          th:classappend="${event.category == 'social'} ? 'cat-social' : (${event.category == 'academic'} ? 'cat-academic' : (${event.category == 'sports'} ? 'cat-sports' : 'cat-other'))"
+                          th:text="${event.category}">social</span>
+                </div>
+                <div class="event-meta">
+                    <span th:text="${event.eventDate}">2025-03-15</span>
+                    <span th:text="${event.startTime} + ' - ' + ${event.endTime}">14:00 - 16:00</span>
+                </div>
+                <div class="event-meta">
+                    <span th:text="'@ ' + ${event.location}">@ Library 204</span>
+                </div>
+                <p class="event-desc" th:text="${event.description}">Description here</p>
+                <span class="no-conflict">No schedule conflict</span>
+                <div class="rsvp-count" th:text="${event.rsvpCount} + ' people going'">0 people going</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

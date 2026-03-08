@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenHour</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #00b4d8, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #2a2a4a;
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: #00b4d8;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #2a2a4a;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #7b2ff7;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b4d8, #7b2ff7);
+            color: white;
+            margin-top: 12px;
+        }
+
+        .btn-find {
+            background: linear-gradient(135deg, #7b2ff7, #ff6b6b);
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        /* Schedule Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #7b2ff7;
+            color: #7b2ff7;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #1f1f3a;
+        }
+
+        tr:hover {
+            background: #16162b;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #555;
+            padding: 24px;
+            font-style: italic;
+        }
+
+        /* Free Slots */
+        .day-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .day-picker select {
+            flex: 1;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .slot {
+            background: #0f2a1f;
+            border: 1px solid #00b4d8;
+            color: #00b4d8;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .result-header {
+            margin-top: 16px;
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>OpenHour</h1>
+    <p class="subtitle">Find when everyone's free. Schedule smarter.</p>
+
+    <!-- ADD CLASS FORM -->
+    <div class="card">
+        <h2>Add a Class</h2>
+        <form th:action="@{/add}" th:object="${newBlock}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Student Name</label>
+                    <input type="text" th:field="*{studentName}"
+                           placeholder="e.g. Alex" required />
+                </div>
+                <div class="form-group">
+                    <label>Course Name</label>
+                    <input type="text" th:field="*{courseName}"
+                           placeholder="e.g. CS 101" required />
+                </div>
+                <div class="form-group">
+                    <label>Day of Week</label>
+                    <select th:field="*{dayOfWeek}" required>
+                        <option value="">Select...</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" th:field="*{startTime}" required />
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" th:field="*{endTime}" required />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Schedule</button>
+        </form>
+    </div>
+
+    <!-- FIND FREE SLOTS -->
+    <div class="card">
+        <h2>Find Free Slots</h2>
+        <form th:action="@{/free-slots}" method="get" class="day-picker">
+            <select name="day" required>
+                <option value="">Pick a day...</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+            </select>
+            <button type="submit" class="btn btn-find">Find Open Times</button>
+        </form>
+
+        <!-- Results show here -->
+        <div th:if="${freeSlots}">
+            <p class="result-header">
+                Free slots on <strong th:text="${selectedDay}">Monday</strong>:
+            </p>
+            <div class="slots-grid">
+                <div class="slot" th:each="slot : ${freeSlots}"
+                     th:text="${slot}">08:00 - 08:30</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CURRENT SCHEDULE TABLE -->
+    <div class="card">
+        <h2>Current Schedule</h2>
+        <div th:if="${#lists.isEmpty(blocks)}" class="empty-state">
+            No classes added yet. Add one above to get started!
+        </div>
+        <table th:if="${!#lists.isEmpty(blocks)}">
+            <thead>
+            <tr>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="block : ${blocks}">
+                <td th:text="${block.studentName}">Alex</td>
+                <td th:text="${block.courseName}">CS 101</td>
+                <td th:text="${block.dayOfWeek}">Monday</td>
+                <td>
+                    <span th:text="${block.startTime}">09:00</span> -
+                    <span th:text="${block.endTime}">10:15</span>
+                </td>
+                <td>
+                    <a th:href="@{/delete/{id}(id=${block.id})}"
+                       class="btn btn-delete">Remove</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

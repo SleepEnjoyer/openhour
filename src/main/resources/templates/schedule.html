@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule - OpenHour</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #FFFFFF;
+            color: #1E1E1E;
+            min-height: 100vh;
+        }
+        nav {
+            background: #1B3A5C;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        nav .logo { font-size: 1.4rem; font-weight: 700; color: #FFFFFF; text-decoration: none; }
+        nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        nav a:hover { color: #FFFFFF; }
+        nav a.active { color: #FFFFFF; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+        h1 { font-size: 2rem; margin-bottom: 24px; color: #1B3A5C; }
+        .card {
+            background: #F4F5F7;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #D9DCE0;
+        }
+        .card h2 { font-size: 1.2rem; margin-bottom: 16px; color: #1B3A5C; }
+        .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; flex: 1; min-width: 140px; }
+        .form-group label { font-size: 0.85rem; color: #6B7280; margin-bottom: 4px; }
+        input, select {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #D9DCE0;
+            background: #FFFFFF;
+            color: #1E1E1E;
+            font-size: 0.95rem;
+        }
+        input:focus, select:focus { outline: none; border-color: #1B3A5C; }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: #1B3A5C; color: white; }
+        .btn-primary:hover { background: #A3293D; }
+        .btn-delete {
+            background: #A3293D;
+            color: white;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-load { background: #1B3A5C; color: white; }
+        .btn-load:hover { background: #A3293D; }
+        .days-check { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+        .days-check label {
+            display: flex; align-items: center; gap: 4px;
+            color: #1E1E1E; font-size: 0.9rem; cursor: pointer;
+        }
+        .days-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: #1B3A5C; }
+        .time-group { display: flex; gap: 6px; align-items: center; }
+        .time-group select { min-width: 70px; }
+        .time-group span { color: #6B7280; font-weight: 600; }
+
+        /* Weekly Grid */
+        .weekly-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 1px;
+            background: #D9DCE0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .grid-header {
+            background: #1B3A5C;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #FFFFFF;
+            font-size: 0.85rem;
+        }
+        .grid-time {
+            background: #F4F5F7;
+            padding: 8px;
+            text-align: right;
+            font-size: 0.8rem;
+            color: #6B7280;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .grid-cell {
+            background: #FFFFFF;
+            padding: 4px;
+            min-height: 48px;
+            position: relative;
+        }
+        .grid-block {
+            background: #EBF0F7;
+            border-left: 3px solid #1B3A5C;
+            border-radius: 4px;
+            padding: 4px 6px;
+            font-size: 0.75rem;
+            color: #1E1E1E;
+            margin-bottom: 2px;
+        }
+        .grid-block .course { font-weight: 600; }
+        .grid-block .time { color: #6B7280; font-size: 0.7rem; }
+
+        /* Schedule Table */
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left; padding: 10px;
+            border-bottom: 2px solid #1B3A5C;
+            color: #1B3A5C; font-size: 0.9rem;
+        }
+        td { padding: 10px; border-bottom: 1px solid #D9DCE0; }
+        tr:hover { background: #F4F5F7; }
+        .empty-state { text-align: center; color: #6B7280; padding: 24px; font-style: italic; }
+        @media (max-width: 700px) {
+            .form-row { flex-direction: column; }
+            .weekly-grid { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/" class="logo">OpenHour</a>
+    <a href="/schedule" class="active">My Schedule</a>
+    <a href="/events">Events</a>
+    <a href="/discover">Discover</a>
+</nav>
+
+<div class="container">
+    <h1>My Schedule</h1>
+
+    <!-- Student Name Lookup -->
+    <div class="card">
+        <h2>Load Your Schedule</h2>
+        <form th:action="@{/schedule}" method="get" class="form-row">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" name="studentName" th:value="${studentName}" required />
+            </div>
+            <button type="submit" class="btn btn-load">Load Schedule</button>
+        </form>
+    </div>
+
+    <!-- Add Class Form -->
+    <div class="card" th:if="${studentName != null and !studentName.isBlank()}">
+        <h2>Add an Activity</h2>
+        <form th:action="@{/schedule/add}" method="post" onsubmit="return combineTimesSchedule()">
+            <input type="hidden" name="studentName" th:value="${studentName}" />
+            <input type="hidden" name="startTime" id="schedStartTime" />
+            <input type="hidden" name="endTime" id="schedEndTime" />
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Activity Name</label>
+                    <input type="text" name="courseName" required />
+                </div>
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <div class="time-group">
+                        <select id="schedStartHour">
+                            <option value="07">7 AM</option>
+                            <option value="08">8 AM</option>
+                            <option value="09" selected>9 AM</option>
+                            <option value="10">10 AM</option>
+                            <option value="11">11 AM</option>
+                            <option value="12">12 PM</option>
+                            <option value="13">1 PM</option>
+                            <option value="14">2 PM</option>
+                            <option value="15">3 PM</option>
+                            <option value="16">4 PM</option>
+                            <option value="17">5 PM</option>
+                            <option value="18">6 PM</option>
+                            <option value="19">7 PM</option>
+                            <option value="20">8 PM</option>
+                            <option value="21">9 PM</option>
+                            <option value="22">10 PM</option>
+                        </select>
+                        <span>:</span>
+                        <select id="schedStartMin">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <div class="time-group">
+                        <select id="schedEndHour">
+                            <option value="07">7 AM</option>
+                            <option value="08">8 AM</option>
+                            <option value="09">9 AM</option>
+                            <option value="10" selected>10 AM</option>
+                            <option value="11">11 AM</option>
+                            <option value="12">12 PM</option>
+                            <option value="13">1 PM</option>
+                            <option value="14">2 PM</option>
+                            <option value="15">3 PM</option>
+                            <option value="16">4 PM</option>
+                            <option value="17">5 PM</option>
+                            <option value="18">6 PM</option>
+                            <option value="19">7 PM</option>
+                            <option value="20">8 PM</option>
+                            <option value="21">9 PM</option>
+                            <option value="22">10 PM</option>
+                        </select>
+                        <span>:</span>
+                        <select id="schedEndMin">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 12px;">
+                <label>Days</label>
+                <div class="days-check">
+                    <label><input type="checkbox" name="selectedDays" value="Monday" /> Mon</label>
+                    <label><input type="checkbox" name="selectedDays" value="Tuesday" /> Tue</label>
+                    <label><input type="checkbox" name="selectedDays" value="Wednesday" /> Wed</label>
+                    <label><input type="checkbox" name="selectedDays" value="Thursday" /> Thu</label>
+                    <label><input type="checkbox" name="selectedDays" value="Friday" /> Fri</label>
+                    <label><input type="checkbox" name="selectedDays" value="Saturday" /> Sat</label>
+                    <label><input type="checkbox" name="selectedDays" value="Sunday" /> Sun</label>
+
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 16px;">Add to Schedule</button>
+        </form>
+    </div>
+
+    <!-- Weekly Grid View -->
+    <div class="card" th:if="${blocks != null and !blocks.isEmpty()}">
+        <h2>Weekly View</h2>
+        <div class="weekly-grid">
+            <div class="grid-header">Time</div>
+            <div class="grid-header" th:each="day : ${days}" th:text="${day}">Monday</div>
+            <th:block th:each="hour : ${hours}">
+                <div class="grid-time" th:text="${#strings.length(hour.toString()) == 1 ? '0' + hour : hour} + ':00'">08:00</div>
+                <div class="grid-cell" th:each="day : ${days}">
+                    <th:block th:if="${grid.containsKey(day) and grid.get(day).containsKey(hour)}">
+                        <div class="grid-block" th:each="block : ${grid.get(day).get(hour)}">
+                            <div class="course" th:text="${block.courseName}">CS 101</div>
+                            <div class="time" th:text="${block.startTime} + ' - ' + ${block.endTime}">09:00 - 10:15</div>
+                        </div>
+                    </th:block>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Class List -->
+    <div class="card" th:if="${blocks != null}">
+        <h2>Your Activities</h2>
+        <div th:if="${blocks.isEmpty()}" class="empty-state">
+            No classes added yet. Add one above to get started!
+        </div>
+        <table th:if="${!blocks.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="block : ${blocks}">
+                <td th:text="${block.courseName}">CS 101</td>
+                <td th:text="${block.dayOfWeek}">Monday</td>
+                <td th:text="${block.startTime} + ' - ' + ${block.endTime}">09:00 - 10:15</td>
+                <td>
+                    <a th:href="@{/schedule/delete/{id}(id=${block.id}, studentName=${studentName})}"
+                       class="btn btn-delete">Remove</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function combineTimesSchedule() {
+    var sh = document.getElementById('schedStartHour').value;
+    var sm = document.getElementById('schedStartMin').value;
+    var eh = document.getElementById('schedEndHour').value;
+    var em = document.getElementById('schedEndMin').value;
+    document.getElementById('schedStartTime').value = sh + ':' + sm;
+    document.getElementById('schedEndTime').value = eh + ':' + em;
+    return true;
+}
+
+function to12h(t) {
+    var parts = t.trim().split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parts[1];
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + m + ' ' + ampm;
+}
+
+function convertRange(text) {
+    var parts = text.split(' - ');
+    return parts.length === 2 ? to12h(parts[0]) + ' - ' + to12h(parts[1]) : text;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.grid-time').forEach(function(el) {
+        el.textContent = to12h(el.textContent.trim());
+    });
+    document.querySelectorAll('.grid-block .time').forEach(function(el) {
+        el.textContent = convertRange(el.textContent);
+    });
+    document.querySelectorAll('tbody tr').forEach(function(row) {
+        var td = row.cells[2];
+        if (td) td.textContent = convertRange(td.textContent);
+    });
+});
+</script>
+</body>
+</html>
